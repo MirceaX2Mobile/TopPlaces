@@ -7,8 +7,12 @@
 //
 
 #import "AppDelegate.h"
+#import "ImagesTableViewController.h"
+#import "JustPostedFlickrPhotosTVC.h"
+#import "RecentlyViewedPhotos.h"
+#import "PhotosMapViewController.h"
 
-@interface AppDelegate ()
+@interface AppDelegate ()<UISplitViewControllerDelegate, UITabBarControllerDelegate>
 
 @end
 
@@ -17,7 +21,46 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    UISplitViewController *splv =  (UISplitViewController *)self.window.rootViewController;
+    splv.delegate = self;
+    
+    UINavigationController *nav = splv.viewControllers[0];
+    
+    UITabBarController *tab = (UITabBarController*) nav.topViewController;
+    tab.delegate = self;
+    
+    JustPostedFlickrPhotosTVC *justPosted = tab.viewControllers[0];
+    RecentlyViewedPhotos *recently = tab.viewControllers[1];
+    
+    justPosted.delegate = recently;
+    
     return YES;
+}
+
+- (BOOL)splitViewController:(UISplitViewController *)splitViewController collapseSecondaryViewController:(UIViewController *)secondaryViewController ontoPrimaryViewController:(UIViewController *)primaryViewController {
+    if ([secondaryViewController isKindOfClass:[UINavigationController class]]
+        && [[(UINavigationController *)secondaryViewController topViewController] isKindOfClass:[PhotosMapViewController class]])
+        {
+
+        // Return YES to indicate that we have handled the collapse by doing nothing; the secondary controller will be discarded.
+        return YES;
+
+    } else {
+
+        return NO;
+
+    }
+}
+
+- (void)tabBarController:(UITabBarController *)tabBarController didSelectViewController:(UIViewController *)viewController {
+    if ([viewController isKindOfClass:[RecentlyViewedPhotos class]]) {
+       [((UITableViewController *)viewController).tableView reloadData];
+        tabBarController.title = @"History";
+    } else {
+        tabBarController.title = @"Countries";
+    }
+    
 }
 
 
